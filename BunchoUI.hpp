@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace BunchoUI
 {
@@ -408,11 +408,11 @@ namespace BunchoUI
 		{
 			if (m_width)
 			{
-				return SizeF{ m_width.value() - m_margine.getHorizontal(),m_height ? m_height.value() - m_margine.getVertical(): onGetY(m_width.value()-m_margine.getHorizontal()) };
+				return SizeF{ m_width.value() ,m_height ? m_height.value(): onGetY(m_width.value()) };
 			}
 			else if (m_height)
 			{
-				return SizeF{ onGetX(m_height.value() - m_margine.getVertical()),m_height.value() - m_margine.getVertical() };
+				return SizeF{ onGetX(m_height.value()),m_height.value() };
 			}
 			else
 			{
@@ -424,11 +424,11 @@ namespace BunchoUI
 		{
 			if (m_width)
 			{
-				return m_width.value()-m_margine.getHorizontal();
+				return m_width.value();
 			}
 			else
 			{
-				return onGetX(m_height ? m_height.value() - m_margine.getVertical() : y );
+				return onGetX(m_height ? m_height.value() : y );
 			}
 		}
 
@@ -436,11 +436,11 @@ namespace BunchoUI
 		{
 			if (m_height)
 			{
-				return m_height.value() - m_margine.getVertical();
+				return m_height.value();
 			}
 			else
 			{
-				return onGetY(m_width ? m_width.value() - m_margine.getHorizontal() : x);
+				return onGetY(m_width ? m_width.value() : x);
 			}
 		}
 	};
