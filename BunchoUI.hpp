@@ -1,28 +1,50 @@
-#pragma once
+﻿#pragma once
 
 namespace BunchoUI
 {
 	namespace CursorSystem
 	{
+		///@brief カーソルの状態(使用中かどうか)を設定する
+		///@param capture カーソルの状態　true:使用中
+		///@remark スライダーなどで使用する
 		void SetCapture(const bool capture);
 
+		///@brief カーソルの状態(使用中かどうか)を設定する　1フレームだけ有効
+		///@param capture カーソルの状態　true:使用中
+		///@remark UIの重なりを処理するために使用する
 		void SetCaptureOneFrame(const bool capture);
 
+		///@brief カーソルの状態(使用中かどうか)を取得する
+		///@return カーソルの状態　true:使用中
 		bool IsCaptured();
 
-		void setWheelCapture(const bool capture);
+		///@brief ホイールの状態(使用中かどうか)を設定する　1フレームだけ有効
+		///@param capture ホイールの状態　true:使用中
+		void SetWheelCaptureOneFrame(const bool capture);
 
-		void setWheelHCapture(const bool capture);
+		///@brief 水平ホイールの状態(使用中かどうか)を設定する　1フレームだけ有効
+		///@param capture ホイールの状態　true:使用中
+		void SetWheelHCaptureOneFrame(const bool capture);
 
+		///@brief ホイールの状態(使用中かどうか)を取得する
+		///@return ホイールの状態　true:使用中
 		bool IsWheelCaptured();
 
+		///@brief 水平ホイールの状態(使用中かどうか)を取得する
+		///@return 水平ホイールの状態　true:使用中
 		bool IsWheelHCaptured();
 
+		///@brief 手のアイコンのカスタムカーソルを指定する
+		///@param name カスタムカーソルの名前
+		///@remark ボタンに触れたときにカーソルがこのスタイルになる
 		void SetHandStyle(StringView name);
 
+		///@brief カーソルのスタイルを手のアイコンにする
+		///@remark カスタムカーソルが指定されていない場合、CursorStyle::Handになる
 		void RequestHandStyle();
 	}
 
+	///@brief 周りのUIとの間隔を表すクラス
 	struct Margin
 	{
 		double top = 0.0;
@@ -35,38 +57,42 @@ namespace BunchoUI
 
 		constexpr Margin()noexcept = default;
 
-		constexpr Margin(double space)noexcept
-			:Margin{ space,space } {}
+		constexpr Margin(double space)noexcept;
 
-		constexpr Margin(double vertical, double horizontal)noexcept
-			:Margin{ vertical,horizontal,vertical,horizontal } {}
+		constexpr Margin(double vertical, double horizontal)noexcept;
 
-		constexpr Margin(double top, double right, double bottom, double left)noexcept
-			:top{ top }, right{ right }, bottom{ bottom }, left{ left } {}
+		constexpr Margin(double top, double right, double bottom, double left)noexcept;
 
-		SizeF getSize()const noexcept
-		{
-			return { getHorizontal(), getVertical() };
-		}
+		/// @brief スペースの合計を返す
+		/// @return { 水平方向の合計 , 垂直方向の合計 }
+		constexpr SizeF getSize()const noexcept;
 
-		double getVertical()const noexcept
-		{
-			return top + bottom;
-		}
+		/// @brief 垂直方向の合計を計算
+		/// @return top + bottom
+		constexpr double getVertical()const noexcept;
 
-		double getHorizontal()const noexcept
-		{
-			return right + left;
-		}
+		/// @brief 水平方向の合計を計算
+		/// @return right + left
+		constexpr double getHorizontal()const noexcept;
 	};
 
+	///@brief 内側のUIとの間隔を表すクラス
 	using Padding = Margin;
 
+	///@brief メインの方向(Rowなら水平)の並べ方を表す
+	///@remark
+	///start        [###----]
+	///end          [----###]
+	///center       [--###--]
+	///spaceAround  [-#--#--#-]
+	///spaceBetween [#--#--#]
+	///spaceEvenly  [-#-#-#-]
 	enum class MainAxis
 	{
 		start, end, center, spaceAround, spaceBetween, spaceEvenly
 	};
 
+	///@brief メインではない方向(Rowなら垂直)の並べ方を表す
 	enum class CrossAxis
 	{
 		center, start, end, stretch
@@ -74,793 +100,362 @@ namespace BunchoUI
 
 	using SelfAxis = CrossAxis;
 
+	///@brief 一つの軸の相対座標(0～1)を表すクラス
 	struct Axis
 	{
 		constexpr Axis()noexcept = default;
 
-		Axis(SelfAxis selfAxis)noexcept
-		{
-			switch (selfAxis)
-			{
-			case SelfAxis::center:
-				relative = 0.5;
-				break;
-			case SelfAxis::start:
-				relative = 0.0;
-				break;
-			case SelfAxis::end:
-				relative = 1.0;
-				break;
-			case SelfAxis::stretch:
-				stretch = true;
-				break;
+		constexpr Axis(SelfAxis selfAxis)noexcept;
 
-			default:
-				break;
-			}
-		}
-
-		constexpr Axis(double relative)noexcept
-			:relative{ relative } {}
+		constexpr Axis(double relative)noexcept;
 
 		bool stretch = false;
 		double relative = 0.5;
 	};
 
+	///@brief xとy軸の相対座標(0～1)を表すクラス
 	struct Relative
 	{
 		Axis x;
 		Axis y;
 
-		constexpr Relative(const Axis& x, const Axis& y)noexcept
-			:x{ x }, y{ y } {}
+		constexpr Relative(const Axis& x, const Axis& y)noexcept;
 
 		[[nodiscard]]
-		static Relative Stretch()noexcept
-		{
-			return { SelfAxis::stretch,SelfAxis::stretch };
-		}
+		static Relative Stretch()noexcept;
 
 		[[nodiscard]]
-		static Relative Center()noexcept
-		{
-			return { 0.5,0.5 };
-		}
+		static Relative Center()noexcept;
 
 		[[nodiscard]]
-		static Relative TopLeft()noexcept
-		{
-			return { 0.0,0.0 };
-		}
+		static Relative TopLeft()noexcept;
 
 		[[nodiscard]]
-		static Relative Top()noexcept
-		{
-			return { 0.5,0.0 };
-		}
+		static Relative Top()noexcept;
 
 		[[nodiscard]]
-		static Relative TopRight()noexcept
-		{
-			return { 1.0,0.0 };
-		}
+		static Relative TopRight()noexcept;
 
 		[[nodiscard]]
-		static Relative Right()noexcept
-		{
-			return { 1.0,0.5 };
-		}
+		static Relative Right()noexcept;
 
 		[[nodiscard]]
-		static Relative BottomRight()noexcept
-		{
-			return { 1.0,1.0 };
-		}
+		static Relative BottomRight()noexcept;
 
 		[[nodiscard]]
-		static Relative Bottom()noexcept
-		{
-			return { 0.5,1.0 };
-		}
+		static Relative Bottom()noexcept;
 
 		[[nodiscard]]
-		static Relative BottomLeft()noexcept
-		{
-			return { 0.0,1.0 };
-		}
+		static Relative BottomLeft()noexcept;
 
 		[[nodiscard]]
-		static Relative Left()noexcept
-		{
-			return { 0.0,0.5 };
-		}
+		static Relative Left()noexcept;
 	};
 
+	///@brief すべてのUIの基底クラス
 	class UIElement
 	{
 	public:
+		/// @brief クリック可能か
 		bool clickable = false;
-		String tag;
 
 		UIElement() = default;
-
-		UIElement(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, StringView tag)
-			:m_margine{ margine }
-			, clickable{ clickable }
-			, m_relative{ relative }
-			, m_flex{ flex }
-			, m_width{ width }
-			, m_height{ height }
-			, tag{ tag } {}
+		
+		/// @brief コンストラクタ
+		/// @param margine 周りのUIとの間隔
+		/// @param width 横幅(設定しないと自動計算)
+		/// @param height 縦幅(設定しないと自動計算) 
+		/// @param flex RowやColumn内での比率
+		/// @param clickable クリック可能か
+		/// @param relative 相対座標(右寄せなどを指定)
+		UIElement(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative);
 
 		virtual ~UIElement();
 
-		void changeSize()noexcept
-		{
-			m_changeSizeFlg = true;
-		}
+		/// @brief サイズが変わったことを通知する
+		void changeSize()noexcept;
 
-		//返り値はサイズが変わったかどうか
+		/// @brief サイズが変わったかを調べる
+		/// @return サイズが変わったか
+		bool isChangeSize()const noexcept;
+
+		/// @brief UIの更新を行う
+		void update();
+
+		/// @brief UIの描画を行う
+		/// @param drawArea 描画が必要な範囲
+		void draw(const RectF& drawArea)const;
+
+		/// @brief UIがクリックされたか調べる
+		/// @return クリックされたか
+		/// @remark clickableがfalseのときは常にfalse
 		[[nodiscard]]
-		bool update();
+		bool clicked()const noexcept;
 
-		void draw(const RectF& rect)const
-		{
-			onDraw(rect);
-		}
-
+		/// @brief UIが押されているか調べる
+		/// @return 押されているか
+		/// @remark clickableがfalseのときは常にfalse
 		[[nodiscard]]
-		bool clicked()const noexcept
-		{
-			return m_mouseOvered && clickable && MouseL.down();
-		}
+		bool pressed()const noexcept;
 
-		[[nodiscard]]
-		bool pressed()const noexcept
-		{
-			return m_mouseOvered && clickable && MouseL.pressed();
-		}
+		/// @brief UIにマウスが触れているか調べる
+		/// @return 触れているか
+		bool mouseOver()const noexcept;
 
-		bool mouseOver()const noexcept
-		{
-			return m_mouseOvered;
-		}
-
+		/// @brief UIを再配置する
+		/// @param rect 配置する長方形
+		/// @param parentRelative relativeが決まっていないときの相対座標
 		void build(const RectF& rect, const Relative& parentRelative = Relative::Center());
 
+		/// @brief UIのデフォルトの大きさを計算する
+		/// @return デフォルトの大きさ
+		/// @remark マージンを含む
 		[[nodiscard]]
-		SizeF getSize()const
-		{
-			return getSizeWithoutMargine() + m_margine.getSize();
-		}
+		SizeF getSize();
 
-		//y<getSize().yのときgetSize().x以上の値を返す
-		//getSize().y<=y のときは基本的にgetSize().xと同値を返す
+		/// @brief 縦幅が決まっているときの横幅を計算する
+		/// @param x 縦幅
+		/// @return 横幅
+		/// @remark マージンを含む
 		[[nodiscard]]
-		double getX(double y)const
-		{
-			return getXWithoutMargine(y - m_margine.getVertical()) + m_margine.getHorizontal();
-		}
+		double getX(double y);
 
-		//x<getSize().xのときgetSize().y以上の値を返す
-		//getSize().x<=x のときは基本的にgetSize().yと同値を返す
+		/// @brief 横幅が決まっているときの縦幅を計算する
+		/// @param x 横幅
+		/// @return 縦幅
+		/// @remark マージンを含む
 		[[nodiscard]]
-		double getY(double x)const
-		{
-			return getYWithoutMargine(x- m_margine.getHorizontal()) + m_margine.getVertical();
-		}
+		double getY(double x);
 
+		/// @brief マージン(周りの空間)を含む長方形を計算する
+		/// @return マージンを含む長方形
 		[[nodiscard]]
-		RectF getMargineRect()const noexcept
-		{
-			RectF area = m_rect;
-			area.x -= m_margine.left;
-			area.y -= m_margine.top;
-			area.w += m_margine.getHorizontal();
-			area.h += m_margine.getVertical();
-			return area;
-		}
+		RectF getMargineRect()const noexcept;
 
+		/// @brief 自身がカーソルを使用中か調べる
+		/// @return カーソルを使用中か(true:使用中)
 		[[nodiscard]]
-		bool hasMouseCapture() const noexcept
-		{
-			return m_hasMouseCapture;
-		}
+		bool hasMouseCapture() const noexcept;
 
-		void setMouseCapture(bool captured) noexcept
-		{
-			if (captured != m_hasMouseCapture) {
-				CursorSystem::SetCapture(captured);
-				m_hasMouseCapture = captured;
-			}
-		}
+		/// @brief カーソルの状態(使用中か)を変更する
+		/// @param captured カーソルの状態(true:使用中)
+		void setMouseCapture(bool captured) noexcept;
 
-		void setMargine(const Margin& margin)noexcept
-		{
-			m_margine = margin;
-			changeSize();
-		}
+		/// @brief UIを移動する
+		/// @param pos 動かす座標
+		void moveBy(const Vec2& pos);
 
-		[[nodiscard]]
-		Margin getMargin()const noexcept
-		{
-			return m_margine;
-		}
+		/// @brief UIを移動する
+		/// @param pos 移動先の座標
+		void setPos(const Vec2& pos);
 
-		void setWidth(const Optional<double>& width)noexcept
-		{
-			m_width = width;
-			changeSize();
-		}
+		/// @brief UIを移動する
+		/// @param center 移動先の中心座標
+		void setCenter(const Vec2& center);
+
+		/// @brief 親のUIを取得する
+		/// @return 親のUI 
+		UIElement* getParent();
+
+		/// @brief 親のUIを取得する
+		/// @tparam Type 親のUIの型
+		/// @return 親のUI 
+		template<typename Type>
+		Type* getParent();
+
+		void setMargine(const Margin& margin)noexcept;
 
 		[[nodiscard]]
-		Optional<double>getWidth()const noexcept
-		{
-			return m_width;
-		}
+		Margin getMargin()const noexcept;
 
-		void setHeight(const Optional<double>& height)noexcept
-		{
-			m_height = height;
-			changeSize();
-		}
+		void setWidth(const Optional<double>& width)noexcept;
 
 		[[nodiscard]]
-		Optional<double>getHeight()const noexcept
-		{
-			return m_height;
-		}
+		Optional<double>getWidth()const noexcept;
 
-		void setFlex(double flex) noexcept
-		{
-			m_flex = flex;
-			changeSize();
-		}
+		void setHeight(const Optional<double>& height)noexcept;
 
 		[[nodiscard]]
-		double getFlex()const noexcept
-		{
-			return m_flex;
-		}
+		Optional<double>getHeight()const noexcept;
 
-		void setRelative(const Optional<Relative>& relative)noexcept
-		{
-			m_relative = relative;
-			changeSize();
-		}
+		void setFlex(double flex) noexcept;
 
 		[[nodiscard]]
-		Optional<Relative>getRelative()const noexcept
-		{
-			return m_relative;
-		}
+		double getFlex()const noexcept;
 
-		//移動用の関数
-		//スクロールバー内や、カーソルで移動するときなどに使う
+		void setRelative(const Optional<Relative>& relative)noexcept;
 
-		void moveBy(const Vec2& pos)
-		{
-			m_rect.pos += pos;
-			onMoveBy(pos);
-		}
+		[[nodiscard]]
+		Optional<Relative>getRelative()const noexcept;
 
-		void setPos(const Vec2& pos)
-		{
-			Vec2 oldPos = m_rect.pos;
-			oldPos.x -= m_margine.left;
-			oldPos.y -= m_margine.top;
-			moveBy(pos - oldPos);
-		}
-
-		void setCenter(const Vec2& center)
-		{
-			moveBy(center - getMargineRect().center());
-		}
+		void setParent(UIElement* parent);
 
 	protected:
 
+		/// @brief UIに使用できる長方形を取得する
+		/// @return UIに使用できる長方形
 		[[nodiscard]]
-		RectF getRect()const noexcept
-		{
-			return m_rect;
-		}
+		RectF getRect()const noexcept;
 
+		/// @brief UIのデフォルトの大きさを計算する
+		/// @return デフォルトの大きさ
 		[[nodiscard]]
 		virtual SizeF onGetSize()const = 0;
 
+		/// @brief UIの座標が移動されたときの処理
 		virtual void onMoveBy(const Vec2& pos);
 
+		/// @brief UIの更新処理
 		virtual void onUpdate();
 
-		virtual void onDraw(const RectF& rect)const;
+		/// @brief UIの描画処理
+		/// @param drawArea 描画範囲
+		virtual void onDraw(const RectF& drawArea)const;
 
+		/// @brief 再レイアウト時の処理
 		virtual void onBuild();
 
+		/// @brief 縦幅が決まっているときの横幅を計算する
+		/// @param x 縦幅
+		/// @return 横幅
 		[[nodiscard]]
 		virtual double onGetX(double y)const;
 
+		/// @brief 横幅が決まっているときの縦幅を計算する
+		/// @param x 横幅
+		/// @return 縦幅
 		[[nodiscard]]
 		virtual double onGetY(double x)const;
 
+		/// @brief カーソルの座標とUIが重なっているか調べる
+		/// @return 重なっているか
 		[[nodiscard]]
 		virtual bool onMouseOver()const;
 
+		/// @brief カーソルが使用可能か調べる
+		/// @return 誰も使用してない or 自身が使用中ならtrue
 		[[nodiscard]]
-		bool isAvailableCursor()const noexcept
-		{
-			return  m_isAvailableCursor;
-		}
+		bool isAvailableCursor()const noexcept;
 
 	private:
-		Margin m_margine = {};
+		Margin m_margine;
 		Optional<double>m_width;
 		Optional<double>m_height;
 		double m_flex = 0;
-		Optional<Relative>m_relative{};
+		Optional<Relative>m_relative;
+
+		UIElement* m_parent = nullptr;
 
 		RectF m_rect{};
-		bool m_changeSizeFlg = false;
+		bool m_changeSizeFlg = true;
 		bool m_mouseOvered = false;
 		bool m_hasMouseCapture = false;
 		bool m_isAvailableCursor = false;
 
-		SizeF getSizeWithoutMargine()const
-		{
-			if (m_width)
-			{
-				return SizeF{ m_width.value() ,m_height ? m_height.value(): onGetY(m_width.value()) };
-			}
-			else if (m_height)
-			{
-				return SizeF{ onGetX(m_height.value()),m_height.value() };
-			}
-			else
-			{
-				return onGetSize();
-			}
-		}
+		Optional<SizeF>m_preX;
+		Optional<SizeF>m_preY;
+		Optional<SizeF>m_preSize;
 
-		double getXWithoutMargine(double y)const
-		{
-			if (m_width)
-			{
-				return m_width.value();
-			}
-			else
-			{
-				return onGetX(m_height ? m_height.value() : y );
-			}
-		}
+		SizeF getSizeWithoutMargine()const;
 
-		double getYWithoutMargine(double x)const
-		{
-			if (m_height)
-			{
-				return m_height.value();
-			}
-			else
-			{
-				return onGetY(m_width ? m_width.value() : x);
-			}
-		}
+		double getXWithoutMargine(double y)const;
+
+		double getYWithoutMargine(double x)const;
 	};
 
-	//childが空のときに表示するUI
+	///@brief childが空のときに表示するUI
 	class NoneUI :public UIElement
 	{
 	public:
 
 		[[nodiscard]]
-		static std::shared_ptr<NoneUI>Create()
-		{
-			return std::make_shared<NoneUI>();
-		}
+		static std::shared_ptr<NoneUI>Create();
 
 		void onDraw(const RectF&)const override;
 
 		SizeF onGetSize()const override;
 	};
 
-	enum class UIDirection
-	{
-		x, y
-	};
-
-	template<UIDirection mainDirection, UIDirection crossDirection>
-	class BaseArrange :public UIElement
+	/// @brief 複数の子供を持つクラスの基底クラス
+	class ChildrenContainer:public UIElement
 	{
 	public:
-		MainAxis m_mainAxis;
-		Axis m_crossAxis;
+		ChildrenContainer(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, const Array<std::shared_ptr<UIElement>>& children);
+
+		void setChildren(const Array<std::shared_ptr<UIElement>>& children);
+
+		void addChild(const std::shared_ptr<UIElement>& child);
+
+		void removeChild(const std::shared_ptr<UIElement>& child);
+
+		void removeChild(const UIElement* child);
+
+		void removeChild(size_t index);
+
+		void replaceChild(const std::shared_ptr<UIElement>& oldChild, const std::shared_ptr<UIElement>& newChild);
+
+		void replaceChild(UIElement* child, const std::shared_ptr<UIElement>& newChild);
+
+		void replaceChild(size_t index, const std::shared_ptr<UIElement>& newChild);
+
+		[[nodiscard]]
+		const Array<std::shared_ptr<UIElement>>& getChildren()const;
+
+	protected:
+
+		void onMoveBy(const Vec2& pos)override;
+
+		void onUpdate()override;
+
+		void onDraw(const RectF& drawingArea)const override;
+
 		Array<std::shared_ptr<UIElement>>m_children;
-
-		BaseArrange(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, StringView tag, MainAxis mainAxis, Axis crossAxis, const Array<std::shared_ptr<UIElement>>& children)
-			: UIElement{ margine,width,height,flex,clickable,relative,tag }
-			, m_children{ children }
-			, m_mainAxis{ mainAxis }
-			, m_crossAxis{ crossAxis } {}
-
-		void setChildren(const Array<std::shared_ptr<UIElement>>& children)
-		{
-			m_children = children;
-			changeSize();
-		}
-
-		void addChild(const std::shared_ptr<UIElement>& child)
-		{
-			m_children.push_back(child);
-			changeSize();
-		}
-
-		void removeChild(const std::shared_ptr<UIElement>& child)
-		{
-			m_children.remove(child);
-			changeSize();
-		}
-
-		[[nodiscard]]
-		const Array<std::shared_ptr<UIElement>>& getChildren()const
-		{
-			return m_children;
-		}
-
-		void setMainAxis(const MainAxis& mainAxis)noexcept
-		{
-			m_mainAxis = mainAxis;
-			changeSize();
-		}
-
-		[[nodiscard]]
-		MainAxis getMainAxis()const noexcept
-		{
-			return m_mainAxis;
-		}
-
-		void setCrossAxis(const CrossAxis& crossAxis)noexcept
-		{
-			m_crossAxis = crossAxis;
-			changeSize();
-		}
-
-		[[nodiscard]]
-		CrossAxis getCrossAxis()const noexcept
-		{
-			return m_crossAxis;
-		}
-
-	protected:
-
-		void onMoveBy(const Vec2& pos)override
-		{
-			for (const auto& child : m_children)
-			{
-				child->moveBy(pos);
-			}
-		}
-
-		void onUpdate()override
-		{
-			for (size_t i = 0; i < m_children.size(); ++i)
-			{
-				if (m_children[m_children.size() - 1 - i]->update())
-				{
-					changeSize();
-				}
-			}
-		}
-
-		void onDraw(const RectF& drawingArea)const override
-		{
-			for (const auto& child : m_children)
-			{
-				if (drawingArea.intersects(child->getMargineRect()))
-				{
-					child->draw(drawingArea);
-				}
-			}
-		}
-
-		void onBuild()override
-		{
-
-			const RectF rect = getRect();
-			double pos = get<mainDirection>(rect.pos);
-			double space = 0;
-
-			const double mainPos = get<mainDirection>(rect.pos);
-			const double crossPos = get<crossDirection>(rect.pos);
-			const double mainLength = get<mainDirection>(rect.size);
-			const double crossLength = get<crossDirection>(rect.size);
-
-			Array<double>list(m_children.size());
-			Array<size_t>expandedIndex;
-
-			double fixedSum = 0;
-			double sumRate = 0;
-
-			for (size_t i = 0; i < m_children.size(); ++i)
-			{
-				if (m_children[i]->getFlex())
-				{
-					sumRate += m_children[i]->getFlex();
-					expandedIndex << i;
-				}
-				else
-				{
-					list[i] = get<mainDirection>(m_children[i], crossLength);
-					fixedSum += list[i];
-				}
-			}
-
-			if (expandedIndex)
-			{
-				const double r = (mainLength - fixedSum) / sumRate;
-				for (const auto i : expandedIndex)
-				{
-					list[i] = r * m_children[i]->getFlex();
-				}
-			}
-			else
-			{
-				switch (m_mainAxis)
-				{
-				case MainAxis::start:
-					break;
-				case MainAxis::end:
-					pos = get<mainDirection>(rect.br()) - list.sum();
-					break;
-				case MainAxis::center:
-					pos = get<mainDirection>(rect.center()) - list.sum() / 2.0;
-					break;
-				case MainAxis::spaceAround:
-					space = (mainLength - list.sum()) / m_children.size();
-					pos = mainPos + space / 2.0;
-					break;
-				case MainAxis::spaceBetween:
-					space = (mainLength - list.sum()) / (m_children.size() - 1);
-					break;
-				case MainAxis::spaceEvenly:
-					space = (mainLength - list.sum()) / (m_children.size() + 1);
-					pos = mainPos + space;
-					break;
-				default:
-					break;
-				}
-			}
-
-			for (size_t i = 0; i < m_children.size(); ++i)
-			{
-				RectF childRect{};
-				get<mainDirection>(childRect.pos) = pos;
-				get<crossDirection>(childRect.pos) = crossPos;
-				get<mainDirection>(childRect.size) = list[i];
-				get<crossDirection>(childRect.size) = crossLength;
-
-				if constexpr (mainDirection==UIDirection::x)
-				{
-					m_children[i]->build(childRect, Relative{ 0.5, m_crossAxis });
-				}
-				else
-				{
-					m_children[i]->build(childRect, Relative{ m_crossAxis,0.5 });
-				}
-
-				pos += list[i] + space;
-			}
-		}
-
-		//flexのときは必要ない
-		SizeF onGetSize()const override
-		{
-			double mainSum = 0, crossMax = 0;
-			for (const auto& child : m_children)
-			{
-				SizeF size = child->getSize();
-				mainSum += get<mainDirection>(size);
-				crossMax = Max(get<crossDirection>(size), crossMax);
-			}
-			SizeF size{};
-			get<mainDirection>(size) = mainSum;
-			get<crossDirection>(size) = crossMax;
-			return size;
-		}
-
-		double onGetMain(double cross)const
-		{
-			double sum = 0;
-			for (const auto& child : m_children)
-			{
-				sum += get<mainDirection>(child, cross);
-			}
-			return sum;
-		}
-
-		double onGetCross(double main)const
-		{
-			Array<double>crossList(m_children.size());
-
-			Array<size_t>expandedIndex;
-
-			double fixedSum = 0;
-			double sumRate = 0;
-
-			for (size_t i = 0; i < m_children.size(); ++i)
-			{
-				if (m_children[i]->getFlex())
-				{
-					sumRate += m_children[i]->getFlex();
-					expandedIndex << i;
-				}
-				else
-				{
-					SizeF size = m_children[i]->getSize();
-					fixedSum += get<mainDirection>(size);
-					crossList[i] = get<crossDirection>(size);
-				}
-			}
-
-			if (expandedIndex)
-			{
-				double r = (main - fixedSum) / sumRate;
-				for (const auto i : expandedIndex)
-				{
-					crossList[i] = get<crossDirection>(m_children[i], r * m_children[i]->getFlex());
-				}
-			}
-
-			double max = 0;
-			for (const auto& cross : crossList)
-			{
-				max = Max(max, cross);
-			}
-
-			return max;
-		}
-
-	private:
-
-		template<UIDirection direction>
-		static constexpr double& get(SizeF& size)
-		{
-			return (direction == UIDirection::x) ? size.x : size.y;
-		}
-
-		template<UIDirection direction>
-		static constexpr double get(const SizeF& size)
-		{
-			return (direction == UIDirection::x) ? size.x : size.y;
-		}
-
-		template<UIDirection direction>
-		static constexpr double get(const std::shared_ptr<UIElement>& child, double length)
-		{
-			return (direction == UIDirection::x) ? child->getX(length) : child->getY(length);
-		}
 	};
 
-	class Row :public BaseArrange<UIDirection::x, UIDirection::y>
+	/// @brief 単一の子供を持つクラスの基底クラス
+	class ChildContainer :public UIElement
 	{
 	public:
-
-		struct Parameter
-		{
-			MainAxis mainAxis = MainAxis::start;
-			Axis crossAxis = CrossAxis::start;
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative>  relative = Relative::Stretch();
-			StringView tag;
-			Array<std::shared_ptr<UIElement>>children;
-		};
-
-		Row(const Parameter& para)
-			:BaseArrange<UIDirection::x, UIDirection::y>{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag,para.mainAxis,para.crossAxis, para.children } {}
+		ChildContainer(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, const std::shared_ptr<UIElement>& child);
 
 		[[nodiscard]]
-		static std::shared_ptr<Row>Create(const Parameter& para)
-		{
-			return std::make_shared<Row>(para);
-		}
+		std::shared_ptr<UIElement>getChild()const noexcept;
 
-	protected:
-		double onGetX(double y)const override;
-
-		double onGetY(double x)const override;
-	};
-
-	class Column :public BaseArrange<UIDirection::y, UIDirection::x>
-	{
-	public:
-
-		struct Parameter
-		{
-			MainAxis mainAxis = MainAxis::start;
-			Axis crossAxis = CrossAxis::start;
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative>  relative = Relative::Stretch();
-			StringView tag;
-			Array<std::shared_ptr<UIElement>>children;
-		};
-
-		Column(const Parameter& para)
-			:BaseArrange<UIDirection::y, UIDirection::x>{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag,para.mainAxis,para.crossAxis, para.children } {}
-
-		[[nodiscard]]
-		static std::shared_ptr<Column>Create(const Parameter& para)
-		{
-			return std::make_shared<Column>(para);
-		}
+		void setChild(const std::shared_ptr<UIElement>& child);
 
 	protected:
 
-		double onGetX(double y)const override;
-
-		double onGetY(double x)const override;
-	};
-
-	class PanelBase :public UIElement
-	{
-	public:
-
-		PanelBase(const Padding& padding, const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, StringView tag, const std::shared_ptr<UIElement>& child)
-			: UIElement{ margine,width,height,flex,clickable, relative,tag }
-			, m_padding{ padding }
-			, child{ child }
-		{
-
-		}
-
-		Padding getPadding()const noexcept
-		{
-			return m_padding;
-		}
-
-		void setPadding(const Padding& padding) noexcept
-		{
-			m_padding = padding;
-			changeSize();
-		}
-
-		[[nodiscard]]
-		std::shared_ptr<UIElement>getChild()const noexcept
-		{
-			return child;
-		}
-
-		void setChild(const std::shared_ptr<UIElement>& ptr)
-		{
-			child = ptr;
-			changeSize();
-		}
-
-
-	protected:
-
-		std::shared_ptr<UIElement>child;
-
-		void childUpdate()
-		{
-			if (child->update())
-			{
-				changeSize();
-			}
-		}
-
-		void childDraw(const RectF& drawingArea)const
-		{
-			child->draw(drawingArea);
-		}
+		std::shared_ptr<UIElement>m_child;
 
 		void onBuild()override;
 
+		SizeF onGetSize()const override;
+
+		double onGetX(double y)const override;
+
+		double onGetY(double x)const override;
+
 		void onMoveBy(const Vec2& pos)override;
+
+		void childUpdate();
+
+		void childDraw(const RectF& drawingArea)const;
+	};
+
+	/// @brief 単一の子供と、子供に対するPaddingを持つクラスの基底クラス
+	class PanelBase :public ChildContainer
+	{
+	public:
+
+		PanelBase(const Padding& padding, const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, const std::shared_ptr<UIElement>& child);
+
+		Padding getPadding()const noexcept;
+
+		void setPadding(const Padding& padding) noexcept;
+
+	protected:
+
+		void onBuild()override;
 
 		SizeF onGetSize()const override;
 
@@ -872,74 +467,269 @@ namespace BunchoUI
 		Padding m_padding;
 	};
 
-	class RectPanel :public PanelBase
+	enum class UIDirection
+	{
+		x, y
+	};
+
+	/// @brief RowとColumnの基底クラス
+	/// @tparam mainDirection メインの軸
+	/// @tparam crossDirection メインにクロスする軸
+	template<UIDirection mainDirection, UIDirection crossDirection>
+	class BaseArrange :public ChildrenContainer
 	{
 	public:
-		ColorF color;
+		MainAxis m_mainAxis;
+		Axis m_crossAxis;
+
+		BaseArrange(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, MainAxis mainAxis, Axis crossAxis, const Array<std::shared_ptr<UIElement>>& children);
+
+		void setMainAxis(const MainAxis& mainAxis)noexcept;
+
+		[[nodiscard]]
+		MainAxis getMainAxis()const noexcept;
+
+		void setCrossAxis(const CrossAxis& crossAxis)noexcept;
+
+		[[nodiscard]]
+		CrossAxis getCrossAxis()const noexcept;
+
+	protected:
+
+		void onBuild()override;
+
+		SizeF onGetSize()const override;
+
+		double onGetMain(double cross)const;
+
+		double onGetCross(double main)const;
+
+	private:
+
+		template<UIDirection direction>
+		static constexpr double& get(SizeF& size);
+
+		template<UIDirection direction>
+		static constexpr double get(const SizeF& size);
+
+		template<UIDirection direction>
+		static constexpr double get(const std::shared_ptr<UIElement>& child, double length);
+	};
+
+	/// @brief 横に並べるUI
+	class Row :public BaseArrange<UIDirection::x, UIDirection::y>
+	{
+	public:
 
 		struct Parameter
 		{
-			ColorF color = Palette::White;
-			Padding padding = {};
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative> relative;
-			StringView tag;
-			std::shared_ptr<UIElement>child = NoneUI::Create();
+			MainAxis mainAxis = MainAxis::center;/// @brief 横方向の並べ方
+			Axis crossAxis = CrossAxis::center;/// @brief 縦方向の並べ方
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative> relative = Relative::Stretch();/// @brief 相対座標(右寄せ、中央寄せなどを指定)
+			Array<std::shared_ptr<UIElement>> children;/// @brief 並べるUIたち
 		};
 
-		RectPanel(const Parameter& para)
-			: PanelBase{ para.padding,para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag,para.child }
-			, color{ para.color } {}
+		Row(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<RectPanel>Create(const Parameter& para)
+		static std::shared_ptr<Row>Create(const Parameter& para);
+
+	protected:
+		double onGetX(double y)const override;
+
+		double onGetY(double x)const override;
+	};
+
+	/// @brief 縦に並べるUI
+	class Column :public BaseArrange<UIDirection::y, UIDirection::x>
+	{
+	public:
+
+		struct Parameter
 		{
-			return std::make_shared<RectPanel>(para);
-		}
+			MainAxis mainAxis = MainAxis::center;/// @brief 縦方向の並べ方
+			Axis crossAxis = CrossAxis::center;/// @brief 横方向の並べ方
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative> relative = Relative::Stretch();/// @brief 相対座標(右寄せ、中央寄せなどを指定)
+			Array<std::shared_ptr<UIElement>>children;/// @brief 並べるUIたち
+		};
+
+		Column(const Parameter& para);
+
+		[[nodiscard]]
+		static std::shared_ptr<Column>Create(const Parameter& para);
+
+	protected:
+
+		double onGetX(double y)const override;
+
+		double onGetY(double x)const override;
+	};
+
+	/// @brief 上に重ねるUI
+	class StackUI :public ChildrenContainer
+	{
+	public:
+
+		struct Parameter
+		{
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative> relative = Relative::Stretch();/// @brief 相対座標(右寄せ、中央寄せなどを指定)
+			Array<std::shared_ptr<UIElement>>children;/// @brief 並べるUIたち
+		};
+
+		StackUI(const Parameter& para);
+
+		[[nodiscard]]
+		static std::shared_ptr<StackUI>Create(const Parameter& para);
+
+	protected:
+
+		SizeF onGetSize()const override;
+
+		double onGetX(double y)const override;
+
+		double onGetY(double x)const override;
+
+		void onBuild()override;
+	};
+
+	/// @brief シンプルなダイアログ
+	/// @remark 基本、StackUIの子供として使う
+	class SimpleDialog :public ChildContainer
+	{
+	public:
+
+		/// @brief 毎フレーム実行される関数
+		std::function<void(SimpleDialog*)>updateFunc;
+
+		/// @brief ダイアログの背景の色
+		ColorF backgroundColor{ 0,0.3 };
+
+		/// @brief ダイアログ以外をクリックしたら消えるか
+		bool erasable;
+
+		struct Parameter
+		{
+			ColorF backgroundColor{ 0,0.5 };/// @brief ダイアログの背景の色
+			bool erasable = true;/// @brief ダイアログ以外をクリックしたら消えるか
+			double fadeTime = 0.2;/// @brief フェードイン・アウトの時間
+			std::shared_ptr<UIElement>child = NoneUI::Create();/// @brief ダイアログのUI
+			std::function<void(SimpleDialog*)>updateFunc = nullptr;/// @brief 毎フレーム実行される関数
+		};
+
+		SimpleDialog(const Parameter& para);
+
+		[[nodiscard]]
+		static std::shared_ptr<SimpleDialog>Create(const Parameter& para);
+
+		/// @brief ダイアログを閉じる
+		/// @remark 親がChildrenContainerの派生クラスでないと消せない
+		void close()noexcept;
 
 	protected:
 		void onUpdate()override;
 
-		void onDraw(const RectF& drawingArea)const override;
+		void onDraw(const RectF& drawArea)const override;
+
+	private:
+		bool m_close = false;
+		Transition m_transition;
+
 	};
 
+	/// @brief シンプルな長方形のパネル
+	class RectPanel :public PanelBase
+	{
+	public:
+
+		/// @brief 角の丸み
+		double r;
+
+		// @brief 長方形の色
+		ColorF color;
+
+		struct Parameter
+		{
+			double r = 0;/// @brief 角の丸み
+			ColorF color = Palette::White;/// @brief 長方形の色
+			Padding padding = r - r * Math::InvSqrt2;/// @brief 内側のUIとの間隔
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative> relative;/// @brief 相対座標(右寄せ、中央寄せなどを指定)
+			std::shared_ptr<UIElement>child = NoneUI::Create();/// @brief 子供のUI
+		};
+
+		RectPanel(const Parameter& para);
+
+		[[nodiscard]]
+		static std::shared_ptr<RectPanel>Create(const Parameter& para);
+
+		bool onMouseOver()const override;
+
+	protected:
+
+		void onUpdate()override;
+
+		void onDraw(const RectF& drawingArea)const override;
+
+	private:
+
+		RoundRect getRoundRect()const noexcept;
+	};
+
+	/// @brief シンプルなボタン
 	class SimpleButton :public PanelBase
 	{
 	public:
+
+		/// @brief 角の丸み
+		double r;
+
+		/// @brief ボタンの色
 		ColorF color;
+
+		/// @brief マウスが触れているときの色
 		ColorF mouseOverColor;
 
 		struct Parameter
 		{
-			ColorF color = Palette::White;
-			ColorF mouseOverColor = Palette::Skyblue;
-			Padding padding = R;
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = true;
-			Optional<Relative> relative = none;
-			StringView tag;
-			std::shared_ptr<UIElement>child = NoneUI::Create();
+			double r = 10;
+			ColorF color = Palette::White;/// @brief ボタンの色
+			ColorF mouseOverColor = Palette::Skyblue;/// @brief マウスが触れているときの色
+			Padding padding = r - r * Math::InvSqrt2;/// @brief 内側のUIとの間隔
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = true;/// @brief クリック可能か
+			Optional<Relative> relative = none;/// @brief 相対座標(右寄せ、中央寄せなどを指定)
+			std::shared_ptr<UIElement>child = NoneUI::Create();/// @brief 子供のUI
 		};
 
-		SimpleButton(const Parameter& para)
-			: PanelBase{ para.padding,para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag,para.child }
-			, color{ para.color }
-			, mouseOverColor{ para.mouseOverColor } {}
+		SimpleButton(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<SimpleButton>Create(const Parameter& para)
-		{
-			return std::make_shared<SimpleButton>(para);
-		}
+		static std::shared_ptr<SimpleButton>Create(const Parameter& para);
 
 	protected:
+
 		void onUpdate()override;
 
 		void onDraw(const RectF& drawingArea)const override;
@@ -947,47 +737,42 @@ namespace BunchoUI
 		bool onMouseOver()const override;
 
 	private:
-		RoundRect getRoundRect()const noexcept
-		{
-			return getRect().rounded(R);
-		}
 
-		static constexpr double R = 10;
+		RoundRect getRoundRect()const noexcept;
 	};
 
+	/// @brief シンプルなスライダー
 	class SimpleSlider :public UIElement {
 	public:
+		/// @brief スライダーの値
 		double value = 1.0;
 
+		/// @brief スライダーの色
 		ColorF color;
 
+		/// @brief スライダーが有効か
 		bool enabled;
 
 		struct Parameter
 		{
-			double value = 0;
-			bool enabled = true;
-			ColorF color{ 0.3, 0.5, 1.0 };
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative>relative = none;
-			StringView tag;
+			double value = 0;/// @brief スライダーの値
+			bool enabled = true;/// @brief スライダーが有効か
+			ColorF color{ 0.3, 0.5, 1.0 };/// @brief スライダーの色
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			Optional<Relative>relative;/// @brief 相対座標(右寄せ、中央寄せなどを指定)
 		};
 
-		SimpleSlider(const Parameter& para)
-			: UIElement{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag }
-			, value{ para.value }
-			, enabled{ para.enabled }
-			, color{ para.color } {}
+		SimpleSlider(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<SimpleSlider>Create(const Parameter& para)
-		{
-			return std::make_shared<SimpleSlider>(para);
-		}
+		static std::shared_ptr<SimpleSlider>Create(const Parameter& para);
+
+		/// @brief スライダーが離されたかを調べる
+		/// @return スライダーが離されたか
+		bool sliderReleased()const noexcept;
 
 	protected:
 
@@ -1000,46 +785,36 @@ namespace BunchoUI
 		SizeF onGetSize()const override;
 
 	private:
+
+		bool m_sliderReleased = false;
+
 		static constexpr double BarHeight = 7;
 		static constexpr double KnobR = 15;
 	};
 
-	class SimpleScrollbar :public UIElement
+	/// @brief シンプルなスクロールバー
+	class SimpleScrollbar :public ChildContainer
 	{
 	public:
+
+		/// @brief ホイールのスピード
+		double speed;
+
 		struct Parameter
 		{
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative>relative = Relative::Stretch();
-			StringView tag;
-			std::shared_ptr<UIElement>child = NoneUI::Create();
+			double speed = 20;/// @brief ホイールのスピード
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			Optional<Relative>relative = Relative::Stretch();/// @brief 相対座標(右寄せ、中央寄せなどを指定)
+			std::shared_ptr<UIElement>child = NoneUI::Create();/// @brief 子供のUI
 		};
 
-		SimpleScrollbar(const Parameter& para)
-			: UIElement{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag }
-			, m_child{ para.child } {}
+		SimpleScrollbar(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<SimpleScrollbar>Create(const Parameter& para)
-		{
-			return std::make_shared<SimpleScrollbar>(para);
-		}
-
-		void setChild(const std::shared_ptr<UIElement>& ptr)
-		{
-			m_child = ptr;
-			changeSize();
-		}
-
-		[[nodiscard]]
-		std::shared_ptr<UIElement>getChild()const noexcept
-		{
-			return m_child;
-		}
+		static std::shared_ptr<SimpleScrollbar>Create(const Parameter& para);
 
 	protected:
 
@@ -1049,84 +824,53 @@ namespace BunchoUI
 
 		void onBuild()override;
 
-		SizeF onGetSize()const override;
-
 		double onGetX(double y)const override;
-
-		double onGetY(double x)const override;
 
 	private:
 
-		bool isScroll()const noexcept
-		{
-			return getRect().h < m_childHeight;
-		}
+		bool isScroll()const noexcept;
 
-		double getRate()const noexcept
-		{
-			return getRect().h / m_childHeight;
-		}
+		double getRate()const noexcept;
 
-		RoundRect getBackBarRoundRect()const noexcept
-		{
-			const RectF rect = getRect();
-			return RoundRect{ rect.rightX() - ScrollbarWidth,rect.y,ScrollbarWidth,rect.h,ScrollbarWidth / 2.0 };
-		}
+		RoundRect getBackBarRoundRect()const noexcept;
 
-		RoundRect getBarRoundRect()const noexcept
-		{
-			const RectF rect = getRect();
-			const double space = rect.h * (1 - getRate());
-			return RoundRect{ rect.rightX() - ScrollbarWidth,rect.y + m_value * space,ScrollbarWidth,rect.h * getRate(),ScrollbarWidth / 2.0 };
-		}
+		RoundRect getBarRoundRect()const noexcept;
 
-		std::shared_ptr<UIElement>m_child;
 		double m_value = 0;
 		double m_childHeight = 0;
 
 		static constexpr double ScrollbarWidth = 20;
 	};
 
+	/// @brief 長方形を表示するのUI
 	class RectUI :public  UIElement
 	{
 	public:
+
+		/// @brief 長方形の色
 		ColorF color;
 
 		struct Parameter
 		{
-			SizeF size = SizeF{ 50,50 };
-			ColorF color = Palette::White;
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative> relative = none;
-			StringView tag;
+			SizeF size = SizeF{ 50,50 };/// @brief 長方形のサイズ
+			ColorF color = Palette::White;/// @brief 長方形の色
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative> relative = none;/// @brief 相対座標(右寄せ、中央寄せなどを指定)
 		};
 
-		RectUI(const Parameter& para)
-			: UIElement{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag }
-			, color{ para.color }
-			, m_size{ para.size } {}
+		RectUI(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<RectUI>Create(const Parameter& para)
-		{
-			return std::make_shared<RectUI>(para);
-		}
+		static std::shared_ptr<RectUI>Create(const Parameter& para);
 
 		[[nodiscard]]
-		SizeF getSize()const noexcept
-		{
-			return m_size;
-		}
+		SizeF getSize()const noexcept;
 
-		void setSize(const SizeF& size)noexcept
-		{
-			m_size = size;
-			changeSize();
-		}
+		void setSize(const SizeF& size)noexcept;
 
 	protected:
 		void onDraw(const RectF&)const override;
@@ -1137,78 +881,57 @@ namespace BunchoUI
 		SizeF m_size;
 	};
 
+	/// @brief 文字を表示するUI
 	class TextUI :public UIElement
 	{
 	public:
+
+		/// @brief 文字のスタイル
+		TextStyle textStyle;
+
+		/// @brief 文字の色
 		ColorF color;
 
+		/// @brief デフォルトのフォントアセット名
 		static AssetName DefaultFontName;
 
+		/// @brief デフォルトの文字の色
 		static ColorF DefaultColor;
 
 		struct Parameter
 		{
-			StringView text;
-			Font font = DefaultFontName ? FontAsset{ TextUI::DefaultFontName } : SimpleGUI::GetFont();
-			double fontSize = (double)font.fontSize();
-			ColorF color = TextUI::DefaultColor;
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative> relative = none;
-			StringView tag;
+			StringView text;/// @brief 表示する文字列
+			Font font = DefaultFontName ? FontAsset{ TextUI::DefaultFontName } : SimpleGUI::GetFont();/// @brief フォント
+			TextStyle textStyle;/// @brief 文字のスタイル
+			double fontSize = (double)font.fontSize();/// @brief 文字の大きさ
+			ColorF color = TextUI::DefaultColor;/// @brief 文字の色
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative> relative = none;/// @brief 相対座標(右寄せ、中央寄せなどを指定)
 		};
 
-		TextUI(const Parameter& para)
-			: UIElement{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag }
-			, m_text{ para.text }
-			, m_font{ para.font }
-			, m_fontSize{ para.fontSize }
-			, color{ para.color } {}
+		TextUI(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<TextUI>Create(const Parameter& para)
-		{
-			return std::make_shared<TextUI>(para);
-		}
+		static std::shared_ptr<TextUI>Create(const Parameter& para);
 
 		[[nodiscard]]
-		String getText()const noexcept
-		{
-			return m_text;
-		}
+		String getText()const noexcept;
 
-		void setText(StringView text)
-		{
-			m_text = text;
-			changeSize();
-		}
+		void setText(StringView text);
 
 		[[nodiscard]]
-		Font getFont()const noexcept
-		{
-			return m_font;
-		}
+		Font getFont()const noexcept;
 
-		void setFont(const Font& font)
-		{
-			m_font = font;
-			changeSize();
-		}
+		void setFont(const Font& font);
 
 		[[nodiscard]]
-		double getFontSize()const noexcept
-		{
-			return m_fontSize;
-		}
+		double getFontSize()const noexcept;
 
-		void setFontSize(double fontSize)noexcept
-		{
-			m_fontSize = fontSize;
-			changeSize();
-		}
+		void setFontSize(double fontSize)noexcept;
 
 	protected:
 
@@ -1224,47 +947,35 @@ namespace BunchoUI
 		double m_fontSize;
 	};
 
+	/// @brief 画像を表示するUI
 	class TextureUI :public UIElement
 	{
 	public:
 
+		/// @brief 画像の色
 		ColorF color;
 
 		struct Parameter
 		{
-			TextureRegion texture;
-			ColorF color = Palette::White;
-			Margin margine = {};
-			Optional<double> width;
-			Optional<double> height;
-			double flex = 0;
-			bool clickable = false;
-			Optional<Relative>relative = none;
-			StringView tag;
+			TextureRegion texture;/// @brief 表示する画像
+			ColorF color = Palette::White;/// @brief 画像の色
+			Margin margine;/// @brief 周りのUIとの間隔
+			Optional<double> width;/// @brief 横幅(設定しないと自動計算)
+			Optional<double> height;/// @brief 縦幅(設定しないと自動計算)
+			double flex = 0;/// @brief RowやColumn内での比率
+			bool clickable = false;/// @brief クリック可能か
+			Optional<Relative>relative = none;/// @brief 相対座標(右寄せ、中央寄せなどを指定)
 		};
 
-		TextureUI(const Parameter& para)
-			: UIElement{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.tag }
-			, m_texture{ para.texture }
-			, color{ para.color } {}
+		TextureUI(const Parameter& para);
 
 		[[nodiscard]]
-		static std::shared_ptr<TextureUI>Create(const Parameter& para)
-		{
-			return std::make_shared<TextureUI>(para);
-		}
+		static std::shared_ptr<TextureUI>Create(const Parameter& para);
 
 		[[nodiscard]]
-		TextureRegion getTexture()const noexcept
-		{
-			return m_texture;
-		}
+		TextureRegion getTexture()const noexcept;
 
-		void setTexture(const TextureRegion& texture)
-		{
-			m_texture = texture;
-			changeSize();
-		}
+		void setTexture(const TextureRegion& texture);
 
 	protected:
 
@@ -1278,25 +989,35 @@ namespace BunchoUI
 		TextureRegion m_texture;
 	};
 
-	class UIManager {
+	/// @brief UIを管理するクラス
+	class UIManager
+	{
 	public:
-		constexpr UIManager(const RectF& rect = Scene::Rect())noexcept
-			:m_rect{ rect } {}
 
+		/// @brief コンストラクタ
+		/// @param rect UIを配置する領域
+		explicit UIManager(const RectF& rect = Scene::Rect());
+
+		/// @brief 更新する
+		/// @param rect UIを配置する領域
 		void update(const RectF& rect = Scene::Rect());
 
+		/// @brief レイアウトの更新と描画を行う
 		void draw()const;
 
 		void setChildren(const Array<std::shared_ptr<UIElement>>& children);
 
+		void addChild(const std::shared_ptr<UIElement>& child);
+
+		void removeChild(const std::shared_ptr<UIElement>& child);
+
 		[[nodiscard]]
-		const Array<std::shared_ptr<UIElement>>& getChildren()const noexcept
-		{
-			return m_children;
-		}
+		const Array<std::shared_ptr<UIElement>>& getChildren()const noexcept;
 
 	private:
 		RectF m_rect{};
-		Array<std::shared_ptr<UIElement>>m_children;
+		std::shared_ptr<StackUI>m_stackUI = StackUI::Create({});
 	};
 }
+
+#include "BunchoUI.ipp"
