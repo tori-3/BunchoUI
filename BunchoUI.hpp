@@ -160,7 +160,7 @@ namespace BunchoUI
 		bool clickable = false;
 
 		UIElement() = default;
-		
+
 		/// @brief コンストラクタ
 		/// @param margine 周りのUIとの間隔
 		/// @param width 横幅(設定しないと自動計算)
@@ -377,7 +377,7 @@ namespace BunchoUI
 	};
 
 	/// @brief 複数の子供を持つクラスの基底クラス
-	class ChildrenContainer:public UIElement
+	class ChildrenContainer :public UIElement
 	{
 	public:
 		ChildrenContainer(const Margin& margine, const Optional<double>& width, const Optional<double>& height, double flex, bool clickable, const Optional<Relative>& relative, const Array<std::shared_ptr<UIElement>>& children);
@@ -595,6 +595,12 @@ namespace BunchoUI
 
 		[[nodiscard]]
 		static std::shared_ptr<StackUI>Create(const Parameter& para);
+
+		void raiseToTop(const std::shared_ptr<UIElement>& child);
+
+		void raiseToTop(UIElement* child);
+
+		void raiseToTop(size_t index);
 
 	protected:
 

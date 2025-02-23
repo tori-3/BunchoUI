@@ -373,7 +373,7 @@ namespace BunchoUI
 	{
 		for (auto& child : m_children)
 		{
-			if(child.get()==oldChild)
+			if (child.get() == oldChild)
 			{
 				child = newChild;
 				newChild->setParent(this);
@@ -573,7 +573,7 @@ namespace BunchoUI
 	}
 
 	template<UIDirection mainDirection, UIDirection crossDirection>
-	SizeF BaseArrange<mainDirection, crossDirection>::onGetSize()const 
+	SizeF BaseArrange<mainDirection, crossDirection>::onGetSize()const
 	{
 		double mainSum = 0, crossMax = 0;
 		for (const auto& child : m_children)
@@ -692,11 +692,33 @@ namespace BunchoUI
 	//-----------------------------------------------
 
 	inline StackUI::StackUI(const Parameter& para)
-		:ChildrenContainer{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.children } {}
+		:ChildrenContainer{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.children } {
+	}
 
 	inline std::shared_ptr<StackUI>StackUI::Create(const Parameter& para)
 	{
 		return std::make_shared<StackUI>(para);
+	}
+
+	inline void StackUI::raiseToTop(const std::shared_ptr<UIElement>& child)
+	{
+		m_children.remove(child);
+		m_children.push_back(child);
+	}
+
+	inline void StackUI::raiseToTop(UIElement* child)
+	{
+		auto it = std::find_if(m_children.begin(), m_children.end(), [&](const std::shared_ptr<UIElement>& value) {return value.get() == child; });
+		const auto tmp = *it;
+		m_children.erase(it);
+		m_children.push_back(tmp);
+	}
+
+	inline void StackUI::raiseToTop(size_t index)
+	{
+		const auto tmp = m_children[index];
+		m_children.erase(m_children.begin() + index);
+		m_children.push_back(tmp);
 	}
 
 	//-----------------------------------------------
@@ -704,11 +726,12 @@ namespace BunchoUI
 	//-----------------------------------------------
 
 	inline SimpleDialog::SimpleDialog(const Parameter& para)
-		: ChildContainer{ {},none,none,0,false,Relative::Stretch(),para.child}
+		: ChildContainer{ {},none,none,0,false,Relative::Stretch(),para.child }
 		, m_transition{ Duration{para.fadeTime},Duration{para.fadeTime} }
 		, backgroundColor{ para.backgroundColor }
 		, erasable{ para.erasable }
-		, updateFunc{ para.updateFunc } {}
+		, updateFunc{ para.updateFunc } {
+	}
 
 	inline std::shared_ptr<SimpleDialog>SimpleDialog::Create(const Parameter& para)
 	{
@@ -727,7 +750,8 @@ namespace BunchoUI
 	inline RectPanel::RectPanel(const Parameter& para)
 		: PanelBase{ para.padding,para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.child }
 		, r{ para.r }
-		, color{ para.color } {}
+		, color{ para.color } {
+	}
 
 	inline std::shared_ptr<RectPanel>RectPanel::Create(const Parameter& para)
 	{
@@ -747,7 +771,8 @@ namespace BunchoUI
 		: PanelBase{ para.padding,para.margine,para.width,para.height,para.flex,para.clickable,para.relative,para.child }
 		, r{ para.r }
 		, color{ para.color }
-		, mouseOverColor{ para.mouseOverColor } {}
+		, mouseOverColor{ para.mouseOverColor } {
+	}
 
 	inline std::shared_ptr<SimpleButton>SimpleButton::Create(const Parameter& para)
 	{
@@ -767,7 +792,8 @@ namespace BunchoUI
 		: UIElement{ para.margine,para.width,para.height,para.flex,false,para.relative }
 		, value{ para.value }
 		, enabled{ para.enabled }
-		, color{ para.color } {}
+		, color{ para.color } {
+	}
 
 	inline std::shared_ptr<SimpleSlider>SimpleSlider::Create(const Parameter& para)
 	{
@@ -785,7 +811,8 @@ namespace BunchoUI
 
 	inline SimpleScrollbar::SimpleScrollbar(const Parameter& para)
 		: ChildContainer{ para.margine,para.width,para.height,para.flex,false,para.relative,para.child }
-		,speed{para.speed}{}
+		, speed{ para.speed } {
+	}
 
 	inline std::shared_ptr<SimpleScrollbar>SimpleScrollbar::Create(const Parameter& para)
 	{
@@ -822,7 +849,8 @@ namespace BunchoUI
 	inline RectUI::RectUI(const Parameter& para)
 		: UIElement{ para.margine,para.width,para.height,para.flex,para.clickable,para.relative }
 		, color{ para.color }
-		, m_size{ para.size } {}
+		, m_size{ para.size } {
+	}
 
 	inline std::shared_ptr<RectUI>RectUI::Create(const Parameter& para)
 	{
@@ -850,7 +878,8 @@ namespace BunchoUI
 		, m_font{ para.font }
 		, textStyle{ para.textStyle }
 		, m_fontSize{ para.fontSize }
-		, color{ para.color } {}
+		, color{ para.color } {
+	}
 
 	inline std::shared_ptr<TextUI>TextUI::Create(const Parameter& para)
 	{
@@ -921,7 +950,8 @@ namespace BunchoUI
 	//-----------------------------------------------
 
 	inline UIManager::UIManager(const RectF& rect)
-		: m_rect{ rect } {}
+		: m_rect{ rect } {
+	}
 
 	inline void UIManager::draw()const
 	{
