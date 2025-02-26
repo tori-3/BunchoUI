@@ -116,27 +116,60 @@ namespace BunchoUI
 		area.w -= m_margine.getHorizontal();
 		area.h -= m_margine.getVertical();
 
-		SizeF size = getSizeWithoutMargine();
+		SizeF size;
 
-		if (area.w < size.x)
+		if (relative.x.stretch && relative.y.stretch)
 		{
-			size.x = area.w;
-			size.y = getYWithoutMargine(area.w);
+			size = area.size;
 		}
-		else if (area.h < size.y)
+		else
 		{
-			size.x = getXWithoutMargine(area.h);
-			size.y = area.h;
-		}
+			size = getSizeWithoutMargine();
 
-		if (relative.x.stretch)
-		{
-			size.x = area.w;
-		}
+			if (area.w < size.x)
+			{
+				if (area.h < size.y)
+				{
+					size = area.size;
+				}
+				else
+				{
+					size.x = area.w;
+					if (relative.y.stretch)
+					{
+						size.y = area.h;
+					}
+					else
+					{
+						size.y = getYWithoutMargine(area.w);
+					}
+				}
+			}
+			else if (area.h < size.y)
+			{
+				size.y = area.h;
 
-		if (relative.y.stretch)
-		{
-			size.y = area.h;
+				if (relative.x.stretch)
+				{
+					size.x = area.w;
+				}
+				else
+				{
+					size.x = getXWithoutMargine(area.h);
+				}
+			}
+			else
+			{
+				if (relative.x.stretch)
+				{
+					size.x = area.w;
+				}
+
+				if (relative.y.stretch)
+				{
+					size.y = area.h;
+				}
+			}
 		}
 
 		const RectF newRect
